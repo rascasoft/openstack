@@ -11,9 +11,7 @@ The deployment will be done on a baremetal environment composed by 9 machines:
 * 2 Compute nodes
 * 3 Ceph nodes
 
-Each of these machines has got 2 nics. The first one, named em1, reach the internal LAN, the second one, named em2, will be used for overcloud provisioning, internal networks and external api access (see Step 5 for details).
-
-All this setup will be summarized in a file called network-environment.yaml which will be treated in the overcloud deployment.
+Each of these machines has got 2 nics. The first one, named em1, reach the internal LAN, the second one, named em2, will be used for overcloud provisioning, internal networks and external api access. This setup will be summarized in a file called network-environment.yaml which will be treated in the <a href="#step-5---overcloud-deploy">overcloud deployment</a>.
 
 ## Step 1: Undercloud provisioning:
 
