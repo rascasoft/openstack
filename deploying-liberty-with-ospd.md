@@ -40,7 +40,6 @@ First a **stack** user must be created, this user will be used for all the opera
 
 Some packages needs to be removed/configured/installed:
 
-    sed -i "s/^Defaults.*requiretty/#Defaults requiretty/" /etc/sudoers
     yum install -y ntp vim tmux
     yum erase -y chrony
     rm -f /etc/chrony* 
@@ -70,7 +69,7 @@ These four commands are quite clear: the first one installs the rpm containing t
 
 ## Step 3 - Undercloud installation
 
-Before proceeding with the Undercloud installation a file named undercloud.conf must be created in the directory in which we want to launch the installation. The contents of this file strongly depends on how we want to manage the undercloud network. As an example, the file should contain something like this:
+Before proceeding with the Undercloud installation a file named *undercloud.conf* must be created in the directory in which we want to launch the installation. The contents of this file strongly depends on how we want to manage the undercloud network. As an example, the file should contain something like this:
 
     [DEFAULT]
     local_ip = 192.0.2.1/24
@@ -100,7 +99,7 @@ The last step of the Undercloud installation will be to configure the overcloud'
     sudo ip addr add 172.20.0.254/24 dev vlan2205
     sudo iptables -A BOOTSTACK_MASQ -s 172.20.0.0/24 ! -d 172.20.0.0/24 -j MASQUERADE -t nat
 
-The first one will add the vlan2205 to the br-ctlplane bridge interface, the second will bring this device up, the third will assign to this device the chosen ip (see Step 5 network configuration) and the last one will configure iptables to MASQUERADE the traffic where the source is the interested network segment.
+The first one will add the vlan2205 vlan to the br-ctlplane bridge interface, the second will bring this device up, the third will assign to this device the chosen ip that will make the undercloud machine able to access the external network api (see <a href="#step-5---overcloud-deploy">Step 5 - Overcloud deployment</a>) and the last one will configure iptables to MASQUERADE the traffic where the source is the interested network segment.
 
 ## Step 4 - Overcloud introspection
 
@@ -126,6 +125,7 @@ After the image generation it is *optional* to configure the password for the *o
     sudo yum -y install libguestfs-tools.noarch
     virt-sysprep --root-password password:redhat -a overcloud-full.qcow2
 
+This will be useful in case our machines will be not reachable via network and just via console.
 Finally it is possible to load the images into the overcloud provisioning system:
 
     openstack overcloud image upload --image-path /home/stack/images/
@@ -218,26 +218,25 @@ As explained on top, before deployng the overcloud we need to create a network-e
       StorageNetCidr: 172.18.0.0/24
       StorageMgmtNetCidr: 172.19.0.0/24
       TenantNetCidr: 172.16.0.0/24
-      ExternalNetCidr: 10.1.2.0/24
-      ControlPlaneSubnetCidr: "24"
+      ExternalNetCidr: 172.20.0.0/24
+      ControlPlaneSubnetCidr: '24'
       InternalApiAllocationPools: [{'start': '172.17.0.10', 'end': '172.17.0.200'}]
       StorageAllocationPools: [{'start': '172.18.0.10', 'end': '172.18.0.200'}]
       StorageMgmtAllocationPools: [{'start': '172.19.0.10', 'end': '172.19.0.200'}]
       TenantAllocationPools: [{'start': '172.16.0.10', 'end': '172.16.0.200'}]
-      ExternalAllocationPools: [{'start': '10.1.2.10', 'end': '10.1.2.200'}]
+      ExternalAllocationPools: [{'start': '172.20.0.10', 'end': '172.20.0.200'}]
       # Specify the gateway on the external network.
-      ExternalInterfaceDefaultRoute: 10.1.2.254
+      ExternalInterfaceDefaultRoute: 172.20.0.254
       # Gateway router for the provisioning network (or Undercloud IP)
       ControlPlaneDefaultRoute: 192.0.2.1
       # Generally the IP of the Undercloud
       EC2MetadataIp: 192.0.2.1
       DnsServers: ["10.1.241.2"]
-      InternalApiNetworkVlanID: 10
-      StorageNetworkVlanID: 15
-      StorageMgmtNetworkVlanID: 20
-      TenantNetworkVlanID: 30
-      # This won't actually be used since external is on native VLAN, just here for reference
-      ExternalNetworkVlanID: 25
+      InternalApiNetworkVlanID: 2201
+      StorageNetworkVlanID: 2203
+      StorageMgmtNetworkVlanID: 2204
+      TenantNetworkVlanID: 2202
+      ExternalNetworkVlanID: 2205
       # Floating IP networks do not have to use br-ex, they can use any bridge as long as the NeutronExternalNetworkBridge is set to "''".
       NeutronExternalNetworkBridge: "''"
 
@@ -300,7 +299,7 @@ The options reflect what was defined at the top of this document: 3 controllers,
 * /usr/share/openstack-tripleo-heat-templates/environments/puppet-pacemaker.yaml so to be able to have an High Available deployment based upon Pacemaker;
 * /usr/share/openstack-tripleo-heat-templates/environments/network-isolation.yaml so to be able to use a network isolated environment (See here *link* for more details);
 * /usr/share/openstack-tripleo-heat-templates/environments/net-single-nic-with-vlans.yaml so to use all our vlans into one interface;
-* /home/stack/network-environment.yaml sio to use the setup declared on top of this document;
+* /home/stack/network-environment.yaml so to use the setup declared on top of this document;
 
 Last but not least we will associate our datacentre network segment to our br-floating interface, the one which resides on our LAN, so to be able to publish floating ips on LAN to expose OpenStack's deployed instances.
 
@@ -342,11 +341,7 @@ So, the CirrOS machine will be on the private-network and will have a floating-i
 
 ## Step 6 - Overcloud post operations"
 
-Once all these steps are completed we can enable again the sudoers option "Defaults requiretty":
-
-    sed -i "s/^#Defaults requiretty/Defaults requiretty/g" /etc/sudoers
-
-and add to our stack user (in the undercloud) the ability to connect to all the overcloud machines automatically with the hea-admin user:
+Once all these steps are completed we can add to our stack user (in the undercloud) the ability to connect to all the overcloud machines automatically with the hea-admin user:
 
     cat >> ~/.ssh/config <<EOF
     Host 192.0.2.*
