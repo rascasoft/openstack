@@ -11,7 +11,7 @@ The deployment will be done on a baremetal environment composed by 9 machines:
 * 2 Compute nodes
 * 3 Ceph nodes
 
-Each of these machines has got 2 nics. The first one, named em1, reach the internal LAN, the second one, named em2, will be used for overcloud provisioning, internal networks and external api access. This setup will be summarized in a file called network-environment.yaml which will be treated in the <a href="#step-5---overcloud-deploy">overcloud deployment</a>.
+Each of these machines has got 2 nics. The first one, named em1, reach the internal LAN, the second one, named em2, will be used for overcloud provisioning, internal networks and external api access. This setup will be summarized in a file called network-environment.yaml which will be treated in the [overcloud deployment](#step-5---overcloud-deploy).
 
 ## Step 1: Undercloud provisioning:
 
@@ -202,91 +202,8 @@ At the moment, without these last steps you will eventually loose some machines 
 
 ### Network environment preparation
 
-As explained on top, before deployng the overcloud we need to create a network-environment.yaml file which will need to reside on the undercloud machine, with these contents:
-
-    resource_registry:
-      OS::TripleO::BlockStorage::Net::SoftwareConfig: /home/stack/nic-configs/cinder-storage.yaml
-      OS::TripleO::Compute::Net::SoftwareConfig: /home/stack/nic-configs/compute.yaml
-      OS::TripleO::Controller::Net::SoftwareConfig: /home/stack/nic-configs/controller.yaml
-      OS::TripleO::ObjectStorage::Net::SoftwareConfig: /home/stack/nic-configs/swift-storage.yaml
-      OS::TripleO::CephStorage::Net::SoftwareConfig: /home/stack/nic-configs/ceph-storage.yaml
-    
-    # Variables in "parameter_defaults" apply a different default for any of the top-level or nested params
-    parameter_defaults:
-      # Customize the IP subnets to match the local environment
-      InternalApiNetCidr: 172.17.0.0/24
-      StorageNetCidr: 172.18.0.0/24
-      StorageMgmtNetCidr: 172.19.0.0/24
-      TenantNetCidr: 172.16.0.0/24
-      ExternalNetCidr: 172.20.0.0/24
-      ControlPlaneSubnetCidr: '24'
-      InternalApiAllocationPools: [{'start': '172.17.0.10', 'end': '172.17.0.200'}]
-      StorageAllocationPools: [{'start': '172.18.0.10', 'end': '172.18.0.200'}]
-      StorageMgmtAllocationPools: [{'start': '172.19.0.10', 'end': '172.19.0.200'}]
-      TenantAllocationPools: [{'start': '172.16.0.10', 'end': '172.16.0.200'}]
-      ExternalAllocationPools: [{'start': '172.20.0.10', 'end': '172.20.0.200'}]
-      # Specify the gateway on the external network.
-      ExternalInterfaceDefaultRoute: 172.20.0.254
-      # Gateway router for the provisioning network (or Undercloud IP)
-      ControlPlaneDefaultRoute: 192.0.2.1
-      # Generally the IP of the Undercloud
-      EC2MetadataIp: 192.0.2.1
-      DnsServers: ["10.1.241.2"]
-      InternalApiNetworkVlanID: 2201
-      StorageNetworkVlanID: 2203
-      StorageMgmtNetworkVlanID: 2204
-      TenantNetworkVlanID: 2202
-      ExternalNetworkVlanID: 2205
-      # Floating IP networks do not have to use br-ex, they can use any bridge as long as the NeutronExternalNetworkBridge is set to "''".
-      NeutronExternalNetworkBridge: "''"
-
-Most of these settings are self explaining, the most important part resides in the resource_registry declaration. All of the files in the *nic-configs* are copied locally to the stack user directory on the Undercloud from the */usr/share/openstack-tripleo-heat-templates/network/config/single-nic-vlans/*.
-
-Since we want to have a dedicated network bridge (named **br-floating**) to expose our machine, the contents of this file (and **JUST** this one) will be changed into this:
-
-    ...
-    ...
-    resources:
-      OsNetConfigImpl:
-        type: OS::Heat::StructuredConfig
-        properties:
-          group: os-apply-config
-          config:
-            os_net_config:
-              network_config:
-                -
-                  type: ovs_bridge
-                  name: br-floating
-                  use_dhcp: false
-                  members:
-                    -
-                      type: interface
-                      name: nic1
-                -
-                  type: ovs_bridge
-                  name: {get_input: bridge_name}
-                  use_dhcp: false
-                  addresses:
-                    -
-                      ip_netmask:
-                        list_join:
-                          - '/'
-                          - - {get_param: ControlPlaneIp}
-                            - {get_param: ControlPlaneSubnetCidr}
-                  routes:
-                    -
-                      ip_netmask: 169.254.169.254/32
-                      next_hop: {get_param: EC2MetadataIp}
-                  members:
-                    -
-                      type: interface
-                      name: nic2
-                      # force the MAC address of the bridge to this interface
-                      primary: true
-    ...
-    ...
-
-We are telling to the setup to keep *everything* on nic2 (em2) except for the *br-floating* interface with which we will expose out instances with the floating IPs.
+As explained on top, before deployng the overcloud we need to create a network-environment.yaml file which will need to reside on the undercloud machine.
+The contents of the file vary for each environment, see [OSPd Network Isolation Considerations](ospd-network-isolation-considerations) to understand how this can be managed.
 
 ### Overcloud effective deployment 
 
