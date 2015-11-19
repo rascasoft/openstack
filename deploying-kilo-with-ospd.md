@@ -191,7 +191,7 @@ Obviously the capabilities of the machines are assigned using the lowest profile
 ### Network environment preparation
 
 As explained on top, before deployng the overcloud we need to create a network-environment.yaml file which will need to reside on the undercloud machine.
-The contents of the file vary for each environment, see [OSPd Network Isolation Considerations](ospd-network-isolation-considerations) to understand how this can be managed.
+The contents of the file vary for each environment, see [OSPd Network Isolation Considerations](ospd-network-isolation-considerations.md) to understand how this can be managed.
 
 ### Overcloud effective deployment 
 
