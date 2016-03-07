@@ -1,0 +1,15 @@
+{
+  "nodes":[
+{
+  "_comment":"<fqdn of the node>",
+  "pm_type":"pxe_ipmitool",
+  "mac": [ 
+"<mac address of the primary interface of the node>" 
+  ],
+  "arch": "x86_64",
+  "pm_user":"<ipmi username>",
+  "pm_password":"<ipmi password>",
+  "pm_addr":"<ipmi address>"
+},
+  ]
+}

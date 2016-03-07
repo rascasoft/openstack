@@ -1,0 +1,18 @@
+# Undercloud machine
+export UNDERCLOUD=<fqdn of the undercloud>
+export UNDERCLOUDIP=<ip of the undercloud>
+# OpenStack version
+export OPENSTACK_VERSION=mitaka
+# SSH related commands
+export SSH="ssh -o StrictHostKeyChecking=no"
+export SCP="scp -o StrictHostKeyChecking=no"
+# Optional provisioning script
+export PROVISION_SCRIPT=undercloud-provisioning.sh
+# Overcloud details
+export CONTROLLERS=3
+export COMPUTES=1
+export STORAGE=0
+export FLOATING_SUBNET="<subnet of the floating network, i.e. 10.16.144.0/21>"
+export FLOATING_RANGE_START="<start ip of the floating network, i.e. 10.16.144.76>"
+export FLOATING_RANGE_END="<end ip of the floating network, i.e. 10.16.144.83>"
+export FLOATING_GW="<gateway of the floating network, i.e. 10.16.151.254>"

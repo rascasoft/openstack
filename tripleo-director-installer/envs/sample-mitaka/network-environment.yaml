@@ -1,0 +1,46 @@
+resource_registry:
+  OS::TripleO::BlockStorage::Net::SoftwareConfig: /home/stack/nic-configs/cinder-storage.yaml
+  OS::TripleO::Compute::Net::SoftwareConfig: /home/stack/nic-configs/compute.yaml
+  OS::TripleO::Controller::Net::SoftwareConfig: /home/stack/nic-configs/controller.yaml
+  OS::TripleO::ObjectStorage::Net::SoftwareConfig: /home/stack/nic-configs/swift-storage.yaml
+  OS::TripleO::CephStorage::Net::SoftwareConfig: /home/stack/nic-configs/ceph-storage.yaml
+
+# Variables in "parameter_defaults" apply a different default for any of the top-level or nested params
+parameter_defaults:
+  # Customize the IP subnets to match the local environment
+  InternalApiNetCidr: 172.17.0.0/24
+  StorageNetCidr: 172.18.0.0/24
+  StorageMgmtNetCidr: 172.19.0.0/24
+  TenantNetCidr: 172.16.0.0/24
+  ExternalNetCidr: 10.1.2.0/24
+  ControlPlaneSubnetCidr: "24"
+  InternalApiAllocationPools: [{'start': '172.17.0.10', 'end': '172.17.0.200'}]
+  StorageAllocationPools: [{'start': '172.18.0.10', 'end': '172.18.0.200'}]
+  StorageMgmtAllocationPools: [{'start': '172.19.0.10', 'end': '172.19.0.200'}]
+  TenantAllocationPools: [{'start': '172.16.0.10', 'end': '172.16.0.200'}]
+  ExternalAllocationPools: [{'start': '10.1.2.10', 'end': '10.1.2.200'}]
+  # Specify the gateway on the external network.
+  ExternalInterfaceDefaultRoute: <external gateway ip>
+  # Gateway router for the provisioning network (or Undercloud IP)
+  ControlPlaneDefaultRoute: 192.0.2.1
+  # Generally the IP of the Undercloud
+  EC2MetadataIp: 192.0.2.1
+  DnsServers: ["<network dns ip>"]
+  InternalApiNetworkVlanID: 10
+  StorageNetworkVlanID: 15
+  StorageMgmtNetworkVlanID: 20
+  TenantNetworkVlanID: 30
+  # This won't actually be used since external is on native VLAN, just here for reference
+  ExternalNetworkVlanID: 25
+  # Floating IP networks do not have to use br-ex, they can use any bridge as long as the NeutronExternalNetworkBridge is set to "''".
+  NeutronExternalNetworkBridge: "''"
+
+# Variables in "parameters" apply an actual value to one of the top-level params
+parameters:
+  # The OVS logical->physical bridge mappings to use. Defaults to mapping br-ex - the external bridge on hosts - to a physical name 'datacentre' which can be used
+  # to create provider networks (and we use this for the default floating network) - if changing this either use different post-install network scripts or be sure
+  # to keep 'datacentre' as a mapping network name. 
+  # Unfortunately this option is overridden by the command line, due to a limitation (that will be fixed), so even declaring this won't have effect.
+  # See overcloud-deploy.sh for all the explenations.
+  # https://github.com/openstack/tripleo-heat-templates/blob/master/overcloud-without-mergepy.yaml#L112
+  NeutronBridgeMappings: "datacentre:br-floating"
