@@ -8,7 +8,7 @@ When configuring Instance HA inside OSPd, you need to add some new resources int
 ###Key resource agents
 Here's the list:
 
-- fence_compute (named **fence-nova** inside the cluster): which takes care of marking a compute node with the attrib"evacuate";
+- fence_compute (named **fence-nova** inside the cluster): which takes care of marking a compute node with the attribute "evacuate" set to yes;
 - NovaEvacuate (named **nova-evacuate** inside the cluster): which takes care of the effective evacuation of the instances and runs on one of the controllers;
 - nova-compute-wait (named **nova-compute-checkevacuate** inside the cluster): which waits for eventual evacuation before starting nova compute services and runs on each compute nodes;
 
@@ -21,7 +21,7 @@ Instance HA works both on shared storage and local storage environment, which me
 ##What happens when a compute node is lost
 Once configured, how the system behaves when evacuation is needed? This sequence describes the actions taken by the cluster and the OpenStack components:
 
-1. A compute node (say compute-0) which is running instances gets lost for some reason (power outage, kernel panic, manual intervention);
+1. A compute node (say overcloud-compute-1) which is running instances gets lost for some reason (power outage, kernel panic, manual intervention);
 2. The cluster starts the action sequence to fence this host, since it needs to be sure that the host is *really* down before driving any other operation. Setup is configured to have two levels of fencing for the compute hosts:
 
     * **IPMI**: which will occur first and will take care of physically reset the host;
@@ -32,7 +32,7 @@ Once configured, how the system behaves when evacuation is needed? This sequence
         [root@overcloud-controller-0 ~]# attrd_updater -n evacuate -A
         name="evacuate" host="overcloud-compute-1.localdomain" value="yes"
 
-3. At this point the resource **nova-evacuate** which constantly monitors the properties of the cluster in search of the evacuate tag finds out that compute-0 host needs evacuation, and by internally using nova-compute commands starts the action and the instances are recreated on another available host;
+3. At this point the resource **nova-evacuate** which constantly monitors the attributes of the cluster in search of the evacuate tag finds out that overcloud-compute-1 host needs evacuation, and by internally using nova-compute commands starts the action and the instances are recreated on another available host;
 4. In the meantime, while compute-0 turns up again **nova-compute-checkevacuate** will wait (with a default timeout of 120 seconds) evacuation to complete to start in the chain the NovaCompute resource that will enable the fenced host to become available again for running instances;
 
 ##What to look for when something is not working

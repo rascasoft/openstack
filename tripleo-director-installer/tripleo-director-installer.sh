@@ -91,4 +91,4 @@ $SSH stack@$UNDERCLOUDIP ./overcloud-deploy.sh
 
 echo "###############################################"
 echo "$(date) Starting overcloud post operations"
-$SSH root@$UNDERCLOUDIP ./undercloud-post.sh
+$SSH root@$UNDERCLOUDIP ./overcloud-post.sh
