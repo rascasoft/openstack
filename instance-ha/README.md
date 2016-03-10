@@ -8,7 +8,7 @@ When configuring Instance HA inside OSPd, you need to add some new resources int
 ###Key resource agents
 Here's the list:
 
-- fence_compute (named **fence-nova** inside the cluster): which takes care of marking a compute node with the tag "evacuate";
+- fence_compute (named **fence-nova** inside the cluster): which takes care of marking a compute node with the attrib"evacuate";
 - NovaEvacuate (named **nova-evacuate** inside the cluster): which takes care of the effective evacuation of the instances and runs on one of the controllers;
 - nova-compute-wait (named **nova-compute-checkevacuate** inside the cluster): which waits for eventual evacuation before starting nova compute services and runs on each compute nodes;
 
@@ -25,9 +25,12 @@ Once configured, how the system behaves when evacuation is needed? This sequence
 2. The cluster starts the action sequence to fence this host, since it needs to be sure that the host is *really* down before driving any other operation. Setup is configured to have two levels of fencing for the compute hosts:
 
     * **IPMI**: which will occur first and will take care of physically reset the host;
-    * **fence-nova**: which will occur second and will take care of marking inside the cluster properties;
+    * **fence-nova**: which will occur second and will take care of marking evacuate=yes inside the cluster attributes;
 
     So the host gets reset and the cluster earn a new property like this:
+    
+        [root@overcloud-controller-0 ~]# attrd_updater -n evacuate -A
+        name="evacuate" host="overcloud-compute-1.localdomain" value="yes"
 
 3. At this point the resource **nova-evacuate** which constantly monitors the properties of the cluster in search of the evacuate tag finds out that compute-0 host needs evacuation, and by internally using nova-compute commands starts the action and the instances are recreated on another available host;
 4. In the meantime, while compute-0 turns up again **nova-compute-checkevacuate** will wait (with a default timeout of 120 seconds) evacuation to complete to start in the chain the NovaCompute resource that will enable the fenced host to become available again for running instances;
