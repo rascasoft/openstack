@@ -1,8 +1,5 @@
 #!/bin/bash
 
-echo "$(date) Enabling sudoers Defaults requiretty"
-sudo sed -i "s/^#Defaults requiretty/Defaults requiretty/g" /etc/sudoers
-
 echo "$(date) Configuring ssh client"
 cat >> ~/.ssh/config <<EOF
 Host 192.0.2.*
