@@ -41,8 +41,8 @@ echo "$(date) Configuring undercloud repositories in $UNDERCLOUD"
 $SSH root@$UNDERCLOUDIP ./undercloud-repos-$OPENSTACK_VERSION\.sh
 
 echo "###############################################"
-echo "$(date) Uploading undercloud scripts $UNDERCLOUD (root)"
-$SCP -r scripts/undercloud-install.sh scripts/overcloud-{images-$OPENSTACK_VERSION,introspection,deploy,post}.sh scripts/{opensink,follow-events.py} $ENVIRONMENTDIR/{environment,undercloud.conf,instackenv.json,network-environment.yaml,nic-configs} stack@$UNDERCLOUDIP:
+echo "$(date) Uploading undercloud scripts $UNDERCLOUD (stack)"
+$SCP -r scripts/{undercloud-install,ha-tests}.sh scripts/overcloud-{images-$OPENSTACK_VERSION,introspection,deploy,post}.sh scripts/{opensink,follow-events.py} $ENVIRONMENTDIR/{environment,undercloud.conf,instackenv.json,network-environment.yaml,nic-configs} stack@$UNDERCLOUDIP:
 
 # If SSL is enabled copy files
 if [ "x$SSL_ENABLE" != "x" ]
