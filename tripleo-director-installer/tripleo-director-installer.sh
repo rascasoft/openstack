@@ -30,7 +30,7 @@ fi
 
 echo "###############################################"
 echo "$(date) Uploading undercloud preparation scripts $UNDERCLOUD (root)"
-$SCP -r scripts/undercloud-{preparation,repos-$OPENSTACK_VERSION,post}.sh root@$UNDERCLOUDIP:
+$SCP -r scripts/undercloud-{preparation,repos-$OPENSTACK_VERSION}.sh root@$UNDERCLOUDIP:
 
 echo "###############################################"
 echo "$(date) Starting undercloud preparation in $UNDERCLOUD"
