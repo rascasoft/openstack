@@ -63,6 +63,15 @@ $SSH stack@$UNDERCLOUDIP ./overcloud-images-$OPENSTACK_VERSION\.sh
 
 set +e
 
+# If introspectin pre script is declared, we execute it now
+if [ "x$INTROSPECTION_PRE_SCRIPT" != "x" ]
+ then
+  echo "###############################################"
+  echo "$(date) Executing $INTROSPECTION_PRE_SCRIPT (stack)"
+  $SCP $ENVIRONMENTDIR/$INTROSPECTION_PRE_SCRIPT stack@$UNDERCLOUDIP:
+  $SSH stack@$UNDERCLOUDIP ./$INTROSPECTION_PRE_SCRIPT
+fi
+
 echo "###############################################"
 echo "$(date) Starting overcloud introspection (user stack)"
 $SSH stack@$UNDERCLOUDIP ./overcloud-introspection.sh
