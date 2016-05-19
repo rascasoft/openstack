@@ -1,0 +1,3 @@
+# Test: Look for failed actions
+echo "$(date) - List of cluster's failed actions:"
+check_failed_actions
