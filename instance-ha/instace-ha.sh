@@ -2,8 +2,8 @@
 echo "******************* Steps to reproduce the KB https://access.redhat.com/articles/1544823 into a deployed Liberty OPSd overcloud environment"
 
 echo "******************* Parameters"
-IPMIUSER=qe-scale
-IPMIPASS=d0ckingSt4tion
+IPMIUSER=
+IPMIPASS=
 SSH="ssh -o StrictHostKeyChecking=no"
 SCP="scp -o StrictHostKeyChecking=no"
 SSHUSER="heat-admin"
