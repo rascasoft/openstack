@@ -48,9 +48,9 @@ These functions are listed here:
 
 The variables are:
 
-- OVERCLOUD_CORE_RESOURCES: which are galera and rabbitmq
-- OVERCLOUD_RESOURCES: which are *all* the resources
-- OVERCLOUD_SYSTEMD_RESOURCES: which are the resources managed via systemd by pacemaker;
+- **OVERCLOUD_CORE_RESOURCES**: which are galera and rabbitmq
+- **OVERCLOUD_RESOURCES**: which are *all* the resources
+- **OVERCLOUD_SYSTEMD_RESOURCES**: which are the resources managed via systemd by pacemaker;
 
 And can be used in combination to wrote test and recovery files.
 
