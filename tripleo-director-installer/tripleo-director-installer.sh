@@ -1,5 +1,7 @@
 #!/bin/bash
 
+sed -eux
+
 source $1/environment &> /dev/null
 
 if [ $? -eq 0 ]
@@ -14,8 +16,6 @@ if [ $? -eq 0 ]
   echo "A file named 'environment' must exists under $1"
   exit 1
 fi
-
-set -e
 
 WORKINGDIR=$(dirname $0)
 cd $WORKINGDIR
@@ -60,8 +60,6 @@ $SSH stack@$UNDERCLOUDIP ./undercloud-install.sh
 echo "###############################################"
 echo "$(date) Starting overcloud image generation (user stack)"
 $SSH stack@$UNDERCLOUDIP ./overcloud-images-$OPENSTACK_VERSION\.sh
-
-set +e
 
 # If introspectin pre script is declared, we execute it now
 if [ "x$INTROSPECTION_PRE_SCRIPT" != "x" ]

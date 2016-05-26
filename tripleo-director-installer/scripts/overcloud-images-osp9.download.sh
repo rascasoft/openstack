@@ -4,7 +4,7 @@ echo "$(date) Retrieving images"
 source stackrc 
 mkdir ~/images
 cd ~/images
-lftp http://rhos-release.virt.bos.redhat.com/puddle-images/7.3.1-GA/images/ << EOF
+lftp http://rhos-release.virt.bos.redhat.com/puddle-images/9.0/latest-images/ << EOF
 mget *
 quit 0
 EOF
