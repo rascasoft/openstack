@@ -3,6 +3,8 @@
 # Raoul Scarazzini (rasca@redhat.com)
 # This script provides a testing suite from TripleO/Directory OpenStack HA (so with Pacemaker) environments
 
+set -eux
+
 # Define main workdir
 WORKDIR=$(dirname $0)
 
@@ -56,7 +58,6 @@ echo -n "$(date) - Populationg overcloud elements..."
 OVERCLOUD_CORE_RESOURCES="galera rabbitmq-clone"
 OVERCLOUD_RESOURCES=$(sudo pcs resource show | egrep '^ (C|[a-Z])' | sed 's/.* \[\(.*\)\]/\1/g' | sed 's/ \(.*\)(.*):.*/\1/g' | sort)
 OVERCLOUD_SYSTEMD_RESOURCES=$(sudo pcs config show | egrep "Resource:.*systemd"|grep -v "haproxy"|awk '{print $2}')
-[ $? -ne 0 ] && exit 1
 echo "OK"
 
 # Define main variable that determines failures
