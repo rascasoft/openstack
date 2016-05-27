@@ -1,15 +1,5 @@
 #!/bin/bash
 
-set -eux
-
-source environment
-
-source stackrc 
-
-: ${LIGHTWEIGHT:=""}
-: ${SSL_ENABLE:=""}
-
-
 # The default configuration is to have one flat network named datacentre associated with br-ex:
 #
 #   /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini -> mappings: datacentre:br-ex
@@ -35,6 +25,20 @@ source stackrc
 #   /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini -> mappings: datacentre:br-float
 #   openstack overcloud deploy [...] --neutron-bridge-mappings datacentre:br-floating
 
+set -eux
+
+source environment
+
+source stackrc 
+
+: ${LIGHTWEIGHT:=""}
+: ${SSL_ENABLE:=""}
+: ${DEPLOY_ARGS:="-e /usr/share/openstack-tripleo-heat-templates/environments/puppet-pacemaker.yaml -e /usr/share/openstack-tripleo-heat-templates/environments/network-isolation.yaml -e /usr/share/openstack-tripleo-heat-templates/environments/net-single-nic-with-vlans.yaml -e /home/stack/network-environment.yaml"}
+: ${DEPLOY_EXTRA_ARGS:="--neutron-bridge-mappings datacentre:br-floating"}
+
+# If LIGHTWEIGHT is enabled, change DEPLOY_ARGS
+[ "x$LIGHTWEIGHT" != "x" ] && DEPLOY_ARGS="-e /home/stack/wip-mitaka-lightweight-arch -e /home/stack/wip-mitaka-lightweight-arch/environments/puppet-pacemaker.yaml -e /home/stack/wip-mitaka-lightweight-arch/environments/network-isolation.yaml -e /home/stack/wip-mitaka-lightweight-arch/environments/net-single-nic-with-vlans.yaml"
+
 # Mitaka workaround otherwise overcloud deploy will fail
 if [ "$OPENSTACK_VERSION" == "mitaka" ]
  then
@@ -46,23 +50,7 @@ if [ "$OPENSTACK_VERSION" == "mitaka" ]
   fi
 fi
 
-# If SSL is enabled pass all the necessary options
-if [ "x$SSL_ENABLE" != "x" ]
- then
-  if [ "x$LIGHTWEIGHT" != "x" ]
-   then
-    time openstack overcloud deploy --libvirt-type=kvm --ntp-server 10.5.26.10 --control-scale $CONTROLLERS --compute-scale $COMPUTES --ceph-storage-scale $STORAGE --block-storage-scale 0 --swift-storage-scale 0 --control-flavor baremetal --compute-flavor baremetal --ceph-storage-flavor baremetal --block-storage-flavor baremetal --swift-storage-flavor baremetal --templates /home/stack/wip-mitaka-lightweight-arch -e /home/stack/wip-mitaka-lightweight-arch/environments/puppet-pacemaker.yaml -e /home/stack/wip-mitaka-lightweight-arch/environments/network-isolation.yaml -e /home/stack/wip-mitaka-lightweight-arch/environments/net-single-nic-with-vlans.yaml -e /home/stack/network-environment.yaml -e /home/stack/enable-tls.yaml -e /home/stack/cloudname.yaml -e /home/stack/inject-trust-anchor.yaml --neutron-bridge-mappings datacentre:br-floating
-   else 
-    time openstack overcloud deploy --libvirt-type=kvm --ntp-server 10.5.26.10 --control-scale $CONTROLLERS --compute-scale $COMPUTES --ceph-storage-scale $STORAGE --block-storage-scale 0 --swift-storage-scale 0 --control-flavor baremetal --compute-flavor baremetal --ceph-storage-flavor baremetal --block-storage-flavor baremetal --swift-storage-flavor baremetal --templates -e /usr/share/openstack-tripleo-heat-templates/environments/puppet-pacemaker.yaml -e /usr/share/openstack-tripleo-heat-templates/environments/network-isolation.yaml -e /usr/share/openstack-tripleo-heat-templates/environments/net-single-nic-with-vlans.yaml -e /home/stack/network-environment.yaml -e /home/stack/enable-tls.yaml -e /home/stack/cloudname.yaml -e /home/stack/inject-trust-anchor.yaml --neutron-bridge-mappings datacentre:br-floating
-  fi
- else
-  if [ "x$LIGHTWEIGHT" != "x" ]
-   then
-    time openstack overcloud deploy --libvirt-type=kvm --ntp-server 10.5.26.10 --control-scale $CONTROLLERS --compute-scale $COMPUTES --ceph-storage-scale $STORAGE --block-storage-scale 0 --swift-storage-scale 0 --control-flavor baremetal --compute-flavor baremetal --ceph-storage-flavor baremetal --block-storage-flavor baremetal --swift-storage-flavor baremetal --templates /home/stack/wip-mitaka-lightweight-arch -e /home/stack/wip-mitaka-lightweight-arch/environments/puppet-pacemaker.yaml -e /home/stack/wip-mitaka-lightweight-arch/environments/network-isolation.yaml -e /home/stack/wip-mitaka-lightweight-arch/environments/net-single-nic-with-vlans.yaml -e /home/stack/network-environment.yaml --neutron-bridge-mappings datacentre:br-floating
-   else
-    time openstack overcloud deploy --libvirt-type=kvm --ntp-server 10.5.26.10 --control-scale $CONTROLLERS --compute-scale $COMPUTES --ceph-storage-scale $STORAGE --block-storage-scale 0 --swift-storage-scale 0 --control-flavor baremetal --compute-flavor baremetal --ceph-storage-flavor baremetal --block-storage-flavor baremetal --swift-storage-flavor baremetal --templates -e /usr/share/openstack-tripleo-heat-templates/environments/puppet-pacemaker.yaml -e /usr/share/openstack-tripleo-heat-templates/environments/network-isolation.yaml -e /usr/share/openstack-tripleo-heat-templates/environments/net-single-nic-with-vlans.yaml -e /home/stack/network-environment.yaml --neutron-bridge-mappings datacentre:br-floating
-  fi
-fi
+time openstack overcloud deploy --libvirt-type=kvm --ntp-server 10.5.26.10 --control-scale $CONTROLLERS --compute-scale $COMPUTES --ceph-storage-scale $STORAGE --block-storage-scale 0 --swift-storage-scale 0 --control-flavor baremetal --compute-flavor baremetal --ceph-storage-flavor baremetal --block-storage-flavor baremetal --swift-storage-flavor baremetal --templates $DEPLOY_ARGS $SSL_ENABLE $DEPLOY_EXTRA_ARGS || true
 
 overcloud_status=$(heat stack-list | grep overcloud | awk '{print $6}')
 if [ "$overcloud_status" == "CREATE_COMPLETE" ]
