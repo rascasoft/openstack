@@ -3,8 +3,6 @@
 # Raoul Scarazzini (rasca@redhat.com)
 # This script provides a testing suite from TripleO/Directory OpenStack HA (so with Pacemaker) environments
 
-set -eux
-
 # Define main workdir
 WORKDIR=$(dirname $0)
 

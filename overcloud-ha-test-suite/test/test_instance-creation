@@ -32,10 +32,10 @@ echo floatingip=$floatingip
 #...
 #| 6fde7d2a-e2d9-4b0f-a982-b7cbc3244807 | private-network                                    | 31a5ccd5-07bd-4103-a4a3-ab2c6d6148d7 10.1.1.0/24      |
 #...
-nova flavor-create --ephemeral 0  --is-public True m1.small overcloud-instance-test-small-flavor 2048 20 1
+nova flavor-create --ephemeral 0  --is-public True test.small overcloud-instance-test-small-flavor 2048 20 1
 private_net_id=$(neutron net-list | grep private-network | awk '{print $2}')
-wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
-glance image-create --name CirrOS --container-format bare --disk-format raw --file cirros-0.3.4-x86_64-disk.img
+wget -O /tmp/cirros-0.3.4-x86_64-disk.img http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
+glance image-create --name CirrOS --container-format bare --disk-format raw --file /tmp/cirros-0.3.4-x86_64-disk.img
 nova boot --image CirrOS --flavor m1.small --security-groups pingandssh --nic net-id=$private_net_id $INSTANCE_NAME                                                                 
 
 #[stack@mrg-06 ~]$ nova list
