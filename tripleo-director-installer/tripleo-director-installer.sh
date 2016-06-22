@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sed -eux
+set -eux
 
 source $1/environment &> /dev/null
 
