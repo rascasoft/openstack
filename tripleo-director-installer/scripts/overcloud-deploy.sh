@@ -50,7 +50,38 @@ if [ "$OPENSTACK_VERSION" == "mitaka" ]
   fi
 fi
 
-time openstack overcloud deploy --libvirt-type=kvm --ntp-server 10.5.26.10 --control-scale $CONTROLLERS --compute-scale $COMPUTES --ceph-storage-scale $STORAGE --block-storage-scale 0 --swift-storage-scale 0 --control-flavor baremetal --compute-flavor baremetal --ceph-storage-flavor baremetal --block-storage-flavor baremetal --swift-storage-flavor baremetal --templates $DEPLOY_ARGS $SSL_ENABLE $DEPLOY_EXTRA_ARGS || true
+DEPLOY_ENV_YAML=/tmp/deploy_env.yaml
+
+if [ "$OPENSTACK_VERSION" != "osp7" ]
+ then
+  DEPLOY_ENV_YAML_EXTRAS="
+    # HeatWorkers doesn't modify num_engine_workers, so handle
+    # via heat::config
+    heat::config::heat_config:
+      DEFAULT/num_engine_workers:
+        value: 1"
+fi
+
+# Set most service workers to 1 to minimise memory usage on
+# the deployed overcloud when using the pingtest. We use this
+# test over tempest when we are memory constrained, ie the HA jobs.
+cat > $DEPLOY_ENV_YAML << EOENV
+parameter_defaults:
+  controllerExtraConfig:$DEPLOY_ENV_YAML_EXTRAS
+    heat::api_cloudwatch::enabled: false
+    heat::api_cfn::enabled: false
+  HeatWorkers: 1
+  CeilometerWorkers: 1
+  CinderWorkers: 1
+  GlanceWorkers: 1
+  KeystoneWorkers: 1
+  NeutronWorkers: 1
+  NovaWorkers: 1
+  SwiftWorkers: 1
+EOENV
+
+exec openstack overcloud deploy --libvirt-type=kvm --ntp-server 10.5.26.10 --control-scale $CONTROLLERS --compute-scale $COMPUTES --ceph-storage-scale $STORAGE --block-storage-scale 0 --swift-storage-scale 0 --control-flavor baremetal --compute-flavor baremetal --ceph-storage-flavor baremetal --block-storage-flavor baremetal --swift-storage-flavor baremetal --templates $DEPLOY_ARGS $SSL_ENABLE $DEPLOY_EXTRA_ARGS \
+    ${DEPLOY_ENV_YAML:+-e $DEPLOY_ENV_YAML}
 
 overcloud_status=$(heat stack-list | grep overcloud | awk '{print $6}')
 if [ "$overcloud_status" == "CREATE_COMPLETE" ]
