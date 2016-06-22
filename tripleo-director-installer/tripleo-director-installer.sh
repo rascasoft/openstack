@@ -3,6 +3,11 @@
 set -eux
 
 source $1/environment &> /dev/null
+WORKINGDIR=$(dirname $0)
+: ${PROVISION_SCRIPT:=""}
+: ${INTROSPECTION_PRE_SCRIPT:=""}
+: ${INTROSPECTION_POST_SCRIPT:=""}
+: ${SSL_ENABLE:=""}
 
 if [ $? -eq 0 ]
  then
@@ -17,7 +22,6 @@ if [ $? -eq 0 ]
   exit 1
 fi
 
-WORKINGDIR=$(dirname $0)
 cd $WORKINGDIR
 
 # If provisioning is declared, then we provide the undercloud
