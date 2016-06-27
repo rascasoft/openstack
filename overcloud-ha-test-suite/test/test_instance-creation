@@ -4,11 +4,8 @@ STACKDIR=/home/stack
 
 source $STACKDIR/overcloudrc
 
-# TODO: find a way to pass also the floating external network, so the instance can be exposed "outside"
-FLOATING_IP_CIDR=$(grep ExternalNetCidr $STACKDIR/network-environment.yaml|awk '{print $2}')
-EXTERNAL_NETWORK_GATEWAY=$(grep ExternalInterfaceDefaultRoute $STACKDIR/network-environment.yaml|awk '{print $2}')
-FLOATING_IP_START=$(grep ExternalAllocationPools $STACKDIR/network-environment.yaml | sed "s/.*start': '\(.*\)', .*/\\1/g")
-FLOATING_IP_END=$(grep ExternalAllocationPools $STACKDIR/network-environment.yaml | sed "s/.*end': '\(.*\)'.*/\\1/g")
+# Load the environment with all the info for floating network
+source $STACKDIR/environment
 
 TIMEOUT=30
 INSTANCE_NAME=cirros-1
