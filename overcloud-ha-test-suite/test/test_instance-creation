@@ -12,7 +12,7 @@ INSTANCE_NAME=cirros-1
 PRIVATE_NETWORK=10.1.1.0/24
 
 neutron net-create floating-network --router:external=True --provider:physical_network datacentre --provider:network_type flat
-neutron subnet-create --name floating-subnet --disable-dhcp --allocation-pool start=$FLOATING_IP_START,end=$FLOATING_IP_END --gateway $FLOATING_GW floating-network $FLOATING_IP_CIDR
+neutron subnet-create --name floating-subnet --disable-dhcp --allocation-pool start=$FLOATING_RANGE_START,end=$FLOATING_RANGE_END --gateway $FLOATING_GW floating-network $FLOATING_SUBNET
 neutron net-create private-network
 neutron subnet-create private-network $PRIVATE_NETWORK --name private-subnet
 neutron router-create floating-router
