@@ -26,7 +26,6 @@ if [ $# -gt 0 ]
         ;;
     -u|--undercloud)
         undercloud=true
-        shift
         ;;
     -t|--test)
         test_sequence="$2"
@@ -38,25 +37,26 @@ if [ $# -gt 0 ]
         ;;
     --)
         shift
-        break
+        exit
         ;;
     -?*)
         usage
         exit 1
         ;;
     *)
-        break
+        usage
+        exit
    esac
 
    shift
   done
  else
-  -usage
+  usage
   exit 1
 fi
 
 # Populating overcloud elements if not on undercloud
-if [ "$undercloud" = true ]
+if [ "$undercloud" != true ]
  then
   echo -n "$(date) - Populationg overcloud elements..."
   OVERCLOUD_CORE_RESOURCES="galera rabbitmq-clone"
