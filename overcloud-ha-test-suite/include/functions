@@ -6,6 +6,7 @@ function usage {
   echo "Usage $0 -t <testfile> [-r <recover file>]
 -t, --test <testfile>		Specify which file contains the test to run
 -r, --recover <recoverfile>	Specify which file (if any) should be used for recovery
+-u, --undercloud		Test will be performed on undercloud
 "
 }
 

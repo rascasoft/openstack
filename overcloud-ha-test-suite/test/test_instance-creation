@@ -58,8 +58,9 @@ floatingip_id=$(neutron floatingip-list | grep $floatingip | awk '{print $2}')
 echo floatingip_id=$floatingip_id
 neutron floatingip-associate $floatingip_id $port_id
 
-echo "###############################################"
+echo "--------------------------------------------------------"
 echo "$(date) Instance will be available at the IP $floatingip"
+echo "--------------------------------------------------------"
 
 COUNTER=1
 while [ $COUNTER -lt $TIMEOUT ]

@@ -24,6 +24,10 @@ if [ $# -gt 0 ]
         usage
         exit
         ;;
+    -u|--undercloud)
+        undercloud=true
+        shift
+        ;;
     -t|--test)
         test_sequence="$2"
         shift
@@ -51,12 +55,15 @@ if [ $# -gt 0 ]
   exit 1
 fi
 
-# Populating overcloud elements
-echo -n "$(date) - Populationg overcloud elements..."
-OVERCLOUD_CORE_RESOURCES="galera rabbitmq-clone"
-OVERCLOUD_RESOURCES=$(sudo pcs resource show | egrep '^ (C|[a-Z])' | sed 's/.* \[\(.*\)\]/\1/g' | sed 's/ \(.*\)(.*):.*/\1/g' | sort)
-OVERCLOUD_SYSTEMD_RESOURCES=$(sudo pcs config show | egrep "Resource:.*systemd"|grep -v "haproxy"|awk '{print $2}')
-echo "OK"
+# Populating overcloud elements if not on undercloud
+if [ "$undercloud" = true ]
+ then
+  echo -n "$(date) - Populationg overcloud elements..."
+  OVERCLOUD_CORE_RESOURCES="galera rabbitmq-clone"
+  OVERCLOUD_RESOURCES=$(sudo pcs resource show | egrep '^ (C|[a-Z])' | sed 's/.* \[\(.*\)\]/\1/g' | sed 's/ \(.*\)(.*):.*/\1/g' | sort)
+  OVERCLOUD_SYSTEMD_RESOURCES=$(sudo pcs config show | egrep "Resource:.*systemd"|grep -v "haproxy"|awk '{print $2}')
+  echo "OK"
+fi
 
 # Define main variable that determines failures
 FAILURES=false
