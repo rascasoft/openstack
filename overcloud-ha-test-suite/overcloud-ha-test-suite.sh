@@ -26,6 +26,7 @@ if [ $# -gt 0 ]
         ;;
     -u|--undercloud)
         undercloud=true
+        shift
         ;;
     -t|--test)
         test_sequence="$2"
@@ -37,15 +38,14 @@ if [ $# -gt 0 ]
         ;;
     --)
         shift
-        exit
+        break
         ;;
     -?*)
         usage
         exit 1
         ;;
     *)
-        usage
-        exit
+        break
    esac
 
    shift
