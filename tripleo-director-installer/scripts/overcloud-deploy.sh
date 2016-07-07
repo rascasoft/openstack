@@ -94,7 +94,7 @@ if [ "$overcloud_status" == "CREATE_COMPLETE" ]
 fi
 
 echo "###############################################"
-echo "$(date) Instance will be available at the IP $floatingip"
+echo "$(date) Starting overcloud post operations"
 
 # Post operations
 cat >> ~/.ssh/config <<EOF
