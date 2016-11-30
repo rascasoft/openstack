@@ -19,14 +19,13 @@ To backport the patch we need to get the master commit id (in this case *34f9a3a
 
     rasca@anomalia-rh [~/oslo.db]> git log
 
-jump into origin/stable/newton and from here create a branch for our fix:
+jump into origin/stable/newton, creating a branch for our fix:
 
-    rasca@anomalia-rh [~/oslo.db]> git checkout origin/stable/newton 
-    rasca@anomalia-rh [~/oslo.db]> git checkout -b backport-mariadb-fix
+    rasca@anomalia-rh [~/oslo.db]> git checkout -b backport-mariadb-fix origin/stable/newton 
 
 Here we can cherry-pick the master commit, by doing this:
 
-    rasca@anomalia-rh [~/oslo.db]> git cherry-pick 34f9a3ac7a56883f8a2cd2a9a93bc42e5194bc1e
+    rasca@anomalia-rh [~/oslo.db]> git cherry-pick -x 34f9a3ac7a56883f8a2cd2a9a93bc42e5194bc1e
 
 We can then amend the commit comment so that will reflect its backport nature:
 
@@ -47,7 +46,7 @@ The message will be something like:
     References: https://bugs.launchpad.net/tripleo/+bug/1642944
     (cherry picked from commit 34f9a3ac7a56883f8a2cd2a9a93bc42e5194bc1e)
  
-So it will be almost the same as before, except for the **cherry-picked** part.
+So it will be almost the same as before, except for the **cherry-picked** part, but the Change-id will maintain the same id.
 
 At this point we can submit a review to make this patch merged ALSO in newton/stable:
 
