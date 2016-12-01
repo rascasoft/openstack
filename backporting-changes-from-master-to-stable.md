@@ -83,38 +83,56 @@ Once all these modifications are made we can commit them so that the title of th
 
 **Release oslo.db 4.13.4 (newton)**
 
-After this the review is [ready](https://review.openstack.org/#/c/404289/) and can start its process to be merged, the man in charge of this package creation is the PTL (*Project Team Lead*), all the PTLs are listed [here](https://wiki.openstack.org/wiki/CrossProjectLiaisons#Release_management).
+After this the review is [ready](https://review.openstack.org/#/c/404289/) it walks through the review process, which depends mostly on the man in charge of this package creation, the PTL (*Project Team Lead*, all the PTLs are listed [here](https://wiki.openstack.org/wiki/CrossProjectLiaisons#Release_management)).
 
-Looking inside existing packages
---------------------------------
+Once the review receives two **+2** and passes checks and gates from Jenkins it gets merged and the package can be generated. Depending on the package we're working on there are different ways to check this process.
 
-So the project is oslo.db and to see which packages produces we can check the spec file in the associated distgit -> https://github.com/rdo-packages/oslo-db-distgit/blob/rpm-master/python-oslo-db.spec
+First of all, a bot creates a [new review](https://review.openstack.org/#/c/405284/) inside the [openstack/requirements](https://github.com/openstack/requirements) project that basically adds the new version inside the *upper-constraints.txt* file. The format of this review will be something like this:
 
-We can use rdopkg to get info from the package:
-
-    rasca@anomalia-rh [~]> rdopkg info python-oslo-db
-    1 packages found:
+    update constraint for oslo.db to new release 4.13.4 
     
-    name: python-oslo-db
-    project: oslo-db
-    conf: rpmfactory-lib
-    upstream: git://git.openstack.org/openstack/oslo.db
-    patches: http://review.rdoproject.org/r/p/openstack/oslo-db.git
-    distgit: https://github.com/rdo-packages/oslo-db-distgit.git
-    master-distgit: https://github.com/rdo-packages/oslo-db-distgit.git
-    review-origin: ssh://review.rdoproject.org:29418/openstack/oslo-db-distgit.git
-    review-patches: ssh://review.rdoproject.org:29418/openstack/oslo-db.git
-    tags:
-      liberty: null
-      mitaka: null
-      newton:
-        source-branch: 4.13.3
-      ocata: null
-      ocata-uc:
-        source-branch: 4.14.0
-    maintainers: 
-    - apevec@redhat.com
-    - hguemar@redhat.com
-    - lbezdick@redhat.com
+    oslo.db 4.13.4 release
     
+    Change-Id: I8683ef4349b46c06acce08995c99996d0a0c93df
+    meta:version: 4.13.4
+    meta:diff-start: -
+    meta:series: newton 
+    meta:release-type: release
+    meta:pypi: yes
+    meta:first: no
+    meta:release:Author: Raoul Scarazzini <rscarazz@redhat.com>
+    meta:release:Commit: Raoul Scarazzini <rscarazz@redhat.com>
+    meta:release:Change-Id: I8137bb92b23ff5d2707a96b2a3222433e2554c04
+    meta:release:Code-Review+1: Victor Stinner <vstinner@redhat.com>
+    meta:release:Code-Review+2: Doug Hellmann <doug@doughellmann.com>
+    meta:release:Code-Review+1: Roman Podoliaka <rpodolyaka@mirantis.com>
+    meta:release:Code-Review+1: Joshua Harlow <jxharlow@godaddy.com>
+    meta:release:Code-Review+1: Alan Pevec <alan.pevec@redhat.com>
+    meta:release:Code-Review+2: Thierry Carrez <thierry@openstack.org>
+    meta:release:Workflow+1: Thierry Carrez <thierry@openstack.org>
 
+This review needs to receive **+2** from core reviewers and also to pass all the gates. It could happen to see gates failing quickly, because of messages like this:
+
+    2016-12-01 11:32:23.950267 | No matching distribution found for oslo.db===4.13.4 (from -r /home/jenkins/workspace/gate-requirements-tox-py27-check-uc-ubuntu-xenial/upper-constraints.txt (line 215))
+
+In this specific case this means that our package is *not yet* available on the mirror used by the gates. To make some verifications:
+
+1. We can check first inside http://tarballs.openstack.org/oslo.db/?C=M;O=D to check if the tar.gz was created (and in this case it is).
+
+2. Then we can check the main pypi (*Python Package Index*) repo, looking for a url like https://pypi.python.org/pypi/oslo.db/4.13.4 (and also in this case package is here).
+
+3. Finally we can check directly on the mirror, looking first at which mirror is used inside the logs:
+
+    2016-12-01 11:32:23.950068 |   Downloading http://mirror.regionone.osic-cloud1.openstack.org/pypi/packages/ff/ef/711041714d381502e85ffd97acbe6c52e5611961eb4571e4d9885f8c225b/oslo.context-2.9.0-py2.py3-none-any.whl
+
+   so the mirror of the url is http://mirror.regionone.osic-cloud1.openstack.org/pypi/packages. To identify the second part for oslo.db, the one with the hash, we can check the download link at https://pypi.python.org/pypi/oslo.db/4.13.4, discovering that the link is:
+
+   https://pypi.python.org/packages/ed/a8/1edd8a21372c205b9a76dfbfa6cd87207ff4b6528a50b98410ffc27b3a05/oslo.db-4.13.4.tar.gz
+
+   So the mirror url will be:
+
+   http://mirror.regionone.osic-cloud1.openstack.org/pypi/packages/ed/a8/1edd8a21372c205b9a76dfbfa6cd87207ff4b6528a50b98410ffc27b3a05/oslo.db-4.13.4.tar.gz
+
+   If the package is available here, then it is safe to put a recheck inside the review, and this time it should succeed.
+
+So basically the problem was just a matter of time. Once this last modification gets merged, we can consider the process complete.
