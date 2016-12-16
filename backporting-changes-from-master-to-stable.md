@@ -15,7 +15,7 @@ Problem in our case is that by default it gets merged in the **master** branch, 
 Backporting the patch
 ---------------------
 
-To backport the patch we need to get the master commit id (in this case *34f9a3ac7a56883f8a2cd2a9a93bc42e5194bc1e*):
+How to backport patch is [addressed here](http://docs.openstack.org/project-team-guide/stable-branches.html#proposing-fixes). In our case we need to get the master commit id (in this case *34f9a3ac7a56883f8a2cd2a9a93bc42e5194bc1e*):
 
     rasca@anomalia-rh [~/oslo.db]> git log
 
