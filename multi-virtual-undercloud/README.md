@@ -1,7 +1,7 @@
 Multi Virtual Undercloud
 ========================
 
-This section explains how to deploy multiple virtual undercloud on the same
+This document describes a way to deploy multiple virtual undercloud on the same
 host. This is mainly for environments in which you want to manage multiple
 baremetal overclouds without having one baremetal machine dedicated for each one
 you deploy.
@@ -19,7 +19,7 @@ overcloud machines via undercloud virtual machine's bridged interface.
 **Host hardware**
 
 The main requirement to make this kind of setup working is to have a host 
-powerful enough to run vms with at least 16GB of RAM and 8 cpus.
+powerful enough to run virtual machines with at least 16GB of RAM and 8 cpus.
 The more power you have, the more undercloud machines you can spawn without
 having impact on performances.
 
@@ -30,26 +30,26 @@ with two main network interfaces:
 
 - **eth0**: bridged on **br0**, pointing to LAN (underclouds will own an IP to
   be reachable via ssh);
-- **eth1**: connected to a dedicated switch, that supports all the VLANs that
+- **eth1**: connected to the dedicated switch that supports all the VLANs that
   will be used in the deployment;
 
-Over eth1, for each undercloud vm two VLAN interfaces are created, with 
-associated bridges:
+Over eth1, for each undercloud virtual machine two VLAN interfaces are created, 
+with associated bridges:
 
 - **Control plane network bridge** (i.e. br2100) built over VLAN interface (i.e. 
-  eth1.2100) that will be eth1 on the undercloud vm, used by TripleO as
-  br-ctlplane
+  eth1.2100) that will be eth1 on the undercloud virtual machine, used by 
+  TripleO as br-ctlplane;
 - **External network bridge** (i.e. br2105) built over VLAN interface (i.e. 
-  eth1.2105) that will be eth2 on the undercloud vm, used by TripleO as external 
-  network device
+  eth1.2105) that will be eth2 on the undercloud virtual machine, used by 
+  TripleO as external network device;
 
 ![network-topology](./multi-virtual-undercloud_network-topology.png "Multi Virtual Undercloud - Network Topology")
 
 Quickstart configuration
 ------------------------
 
-Virtual undercloud machine is treated as a baremetal one, so Quickstart command 
-relies on the baremetal undercloud role, and its playbook.
+Virtual undercloud machine is treated as a baremetal one and the Quickstart 
+command relies on the baremetal undercloud role, and its playbook.
 This means that any playbook similar to [baremetal-undercloud.yml](https://github.com/openstack/tripleo-quickstart-extras/blob/master/playbooks/baremetal-undercloud.yml "Baremetal undercloud playbook") should be okay.
 
 The configuration file has two specific sections that needs attention:
@@ -87,27 +87,29 @@ The multi virtual undercloud script
 The [multi-virtual-undercloud.sh](./multi-virtual-undercloud.sh) script is 
 placed on the VIRTHOST and needs these parameters:
 
-1. **DISTRO**: this must be one of the images present inside the /images dir;
-2. **VMNAME**: the name of the undercloud virtual machine (the name that libvirt
-   will use);
-3. **VMETH0IP**: IP of the virtual undercloud primary interface (to wich
-   quickstart will connect via ssh)
+1. **DISTRO**: this must be the name (without extension) of one of the images 
+   present inside the */images* dir on the VIRTHOST;
+2. **VMNAME**: the name of the undercloud virtual machine (the name that will be
+   used by libvirt);
+3. **VMETH0IP**: IP of the virtual undercloud primary interface to wich
+   quickstart (and users) will connect via ssh;
 4. **VMETH0NM**: Netmask of the virtual undercloud primary interface;
 5. **VMETH0GW**: Gateway of the virtual undercloud primary interface;
 6. **VMSSHKEY**: Public key to be enabled on the virtual undercloud;
 7. **UCVLAN**: VLAN of the overcloud's ctlplane network;
 8. **UCEXTVLAN**: VLAN of the overcloud's external network;
 
-The steps it does are basically:
+The script's actions are basically:
 
 1. Destroy and undefine any existing machine named as the one we want to create;
 2. Prepare the image on which the virtual undercloud will be created by copying
    the available distro image and preparing it to be ready for the TripleO
    installation, it fix size, network interfaces, packages and ssh keys;
-3. Creates and launches the virtual undercloud machine;
+3. Create and launch the virtual undercloud machine;
 
-Of course on the VIRTHOST must exist */images* directory containing images
-suitable for the deploy. For example, having this directory structure:
+**Note**: on the VIRTHOST there must exist an */images* directory containing 
+images suitable for the deploy.
+Having this directory structure:
 
 ```console
 [root@VIRTHOST ~]# ls -l /images/
@@ -121,17 +123,40 @@ lrwxrwxrwx.  1 root root         36 14 feb 09.20 rhel-7.qcow2 -> rhel-guest-imag
 Helps on updating the images, since one can leave config files pointing to
 *centos-7* and, in case of updates, make the symlink point a newer image.
 
+Quickstart command
+------------------
+
+A typical invocation of the TripleO Quickstart command is something similar to
+this:
+
+```console
+/path/to/tripleo-quickstart/quickstart.sh \
+  --bootstrap \
+  --ansible-debug \
+  --no-clone \
+  --playbook baremetal-undercloud.yml \
+  --working-dir /path/to/workdir \
+  --config /path/to/config.yml \
+  --release $RELEASE \
+  --tags "all" \
+  $VIRTHOST
+```
+
+So nothing different from a normal quickstart deploy command line, the 
+difference here is made by the config.yml as described above, with its provision 
+script.
+
 Conclusions
 -----------
 
 This approach can be considered useful in testing multi environments with
 TripleO for three reasons:
 
-* It is fast: it takes the same time to install the undercloud but less to 
+* It is *fast*: it takes the same time to install the undercloud but less to 
   provide it, since you don’t have to wait the physical undercloud provision;
-* It is isolated: using VLANs to separate the traffic keeps each environment 
+* It is *isolated*: using VLANs to separate the traffic keeps each environment 
   completely isolated from the others;
-* It is reliable: you can have the undercloud on a shared storage and think 
+* It is *reliable*: you can have the undercloud on a shared storage and think 
   about putting the undercloud vm in HA, live migrating it with libvirt, 
   pacemaker, whatever...
 
@@ -141,7 +166,7 @@ VIRTHOST, that is made only one time, at the beginning.
 License
 -------
 
-Apache
+GPL
 
 Author Information
 ------------------
